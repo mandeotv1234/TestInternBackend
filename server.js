@@ -1,19 +1,33 @@
 const express = require('express');
-const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+
 dotenv.config();
 
-// Middleware
-app.use(cors());
+const app = express();
+
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 
-// Import and use route
 const route = require('./routes');
-route(app); // ✅ Đây là chỗ đúng để gọi
+route(app);
 
-// MongoDB connect & listen
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB connected');
